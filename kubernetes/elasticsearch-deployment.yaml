@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --verbose
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: elasticsearch
+  name: elasticsearch
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: elasticsearch
+    spec:
+      containers:
+      - env:
+        - name: ES_JAVA_OPTS
+          value: -Xms512m -Xmx512m
+        - name: discovery.type
+          value: single-node
+        - name: transport.host
+          value: 0.0.0.0
+        - name: xpack.security.enabled
+          value: "false"
+        image: docker.elastic.co/elasticsearch/elasticsearch:5.6.8
+        livenessProbe:
+          exec:
+            command:
+            - timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/9300'
+          failureThreshold: 12
+          periodSeconds: 5
+          timeoutSeconds: 5
+        name: elasticsearch
+        ports:
+        - containerPort: 9200
+        - containerPort: 9300
+        resources: {}
+      restartPolicy: Always
+status: {}
